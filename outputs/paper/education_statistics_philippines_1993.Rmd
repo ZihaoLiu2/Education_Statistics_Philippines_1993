@@ -1,0 +1,272 @@
+---
+title: "The Education Level is Unbalanced in Philippines in 1993"
+author: 
+  - Zihao Liu
+thanks: "Code and data are available at: https://github.com/ZihaoLiu2/Education_Statistics_Philippines_1993"
+date: "2 April 2022"
+abstract: "The education level varies a lot in different ages and regions in Philippines in 1993. This report uses the education level data of males to do analysis, and found out that male adults who are youger have a longer time of education received, and are more likely to have a college degree. Also, the regions with a higher rate of having college degree have a lower rate of haivng no education experience.This report can be used to assist the social studies related to education, and can be used to do comparative study with the education level in other countries."
+output:
+  bookdown::pdf_document2
+toc: FALSE
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(here)
+library(gridExtra)
+
+#load in the cleaned datasets
+age_clean<- read_csv(here("inputs/cleaned_data_by_age.csv"))
+res_clean<- read_csv(here("inputs/cleaned_data_by_residence.csv"))
+region_clean<- read_csv(here("inputs/cleaned_data_by_region.csv"))
+```
+
+# Introduction
+
+In Metro,Manila in 1993, a significant number of people had college degree, but there are still a portion of the people who have never received education before [@citeNDS1993]. The education level varies a lot in different regions in the country, and the level is quite different between urban and rural areas [@citeNDS1993]. The education level is unbalanced in Philippines in 1993. And this report is going to explore where and how it is unbalanced. 
+
+The report uses the information from demographic survey data of Philippines in 1993 [@citeNDS1993]. An analysis was performed on the data, and I found out that the male adults who are younger are more likely to have a college degree or higher, the male adults who are older are more likely to have no education experience or only a education level of elementary school, and the younger the male adults are the longer education time they received. Besides the unbalancedness on age, the regions with higher rate of college degree have a lower rate of no education, and the rate of having college degree or higher in urban area is more than two times of the rate in rural area. 
+
+The setup of data will be in the Data section. The analysis and explanation will be in the Results section. The Discussion section will include a overview of the paper, summary of major points, limitation of the report and next steps. The report was created using R programming language [@citeR]. R packages `tidyverse`[@citeTidyverse], `knitr`[@citeKnitr], `dplyr`[@citeDplyr], `ggplot2`[@citeGgplot],`here`[@citeHere], and `gridExtra`[@citeGridextra] were used to create this report. 
+
+
+
+# Data
+
+The data for this report comes from a full page table in *National Demographic Survey Philippines in 1993*(NDS) [@citeNDS1993]. The table exhibits the education level of male Filipinos in 1993. The data for NDS were collected by surveys and interviews, the sample selection is planned according to the 14 regions, "using the 1990 Population Census data on population size" [@citeNDS1993]. The data might not be a complete representation of the nation, because one of the 15 regions in the country just formed and no sample were taken in that region [@citeNDS1993]. Therefore, the data is only a representative of the 14 regions, but not the whole population in Philippines in 1993. 
+
+The image of the table was transferred to text using `tesseract`[@citeTesseract]. And the text was processed to raw datasets using `tidyverse`[@citeTidyverse], `janitor`[@citeJanitor], `purrr`[@citePurrr],and `stringi`[@citeStringi]. The tests for the variables were done using `pointblank`[@citePointblank]. Since the table exhibits the education level information by age, residence and regions, I made three datasets for each type. The datasets have 9 variables, which are age/residence/region, the percentage of no education, elementary school, high school, college or higher education, do not know or missing, and Total percentage, Total number, Median number of years of education. For age, there are 13 observations. For residence, there are 
+2 observations. For regions, there are 15 observations (14 regions and 14 regions in total). 
+
+\newpage
+```{r,echo=FALSE}
+#Table 1, first row of the 3 datasets
+age_clean%>%
+  slice(1)%>%
+  kable(
+    caption = "Table 1:First row of the three datasets(combined), education level of males by age/residence/region",
+    col.names = c("Age","No education","elementary","high school","college+","dont know","Total","number","median years"),
+    digits = 0.1
+  )
+
+res_clean%>%
+  slice(1)%>%
+  kable(
+    col.names = c("residence","No education","elementary school","high school","college+","dont know","Total","number","median years"),
+    digits = 0.1
+  )
+
+region_clean%>%
+  slice(1)%>%
+  kable(
+    col.names = c("region","No education","elementary","high school","college+","dont know","Total","number","median years"),
+    digits = 0.1
+  )
+```
+
+Table 1 is formed by the first row of the three datasets. In table 1, Age represents the age groups of the males, residence represents where the males are from, ether rural or urban area, and region represents the which region it is from the 14 regions. No education represents the percentage of males who have no education experience, elementary school represents the percentage of males with elementary school as their highest education level. High school, college or higher are similar to the representation of elementary school. Total is the total percentage, which is always 100.Number represents the total number of males for each age group/residential type/region. Median years represents the median number of years of education received. 
+```{r,echo = FALSE}
+#figure 2:plot the number of males in different age group
+age_clean$age[1] = "06-09"
+age_clean%>%ggplot()+
+  geom_bar(aes(x=age,y=number),stat = "identity",fill="seagreen3", color="black",)+
+  labs(title="Figure 2:distribution of males by age"
+       )
+```
+Figure 2 exhibits the distribution of number of males by age groups. The distribution peaks in the age group of 10-14 years old, and gradually decreasing as age gets bigger. The plot shows that a big portion of the males are youth and the relatively more aged group(50+) only occupies a small portion of the population in 1993. 
+
+```{r,echo = FALSE}
+#figure 3:plot the number of males in different regions
+region_clean%>%filter(region!="Total")%>%ggplot()+
+  geom_bar(aes(x=region,y=number),stat = "identity",fill="seagreen3", color="black",)+
+  labs(title="Figure 3:distribution of males by regions"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=65))
+#the code for adjusting the text on x-axis is from #http://www.sthda.com/english/wiki/ggplot2-axis-ticks-a-guide-to-customize-tick-marks-and-labels
+```
+
+Figure 3 exhibits the distribution of number of males in the 14 regions in Philippines in 1993. From the plot, *Metro,Manila* has the highest number, whereas *Cordillera Admin.* has the lowest number. The distribution is not concentrated, there are only a few peaks, and the distribution is moderately spread out. For the distribution of residence, there are only two residential types, which are rural and urban. There are 13942 males from urban area and 13583 from rural area. The number is quite close, which might imply that approximately half of the males live in urbanized area in 1993. 
+
+
+# Results
+
+```{r,echo = FALSE}
+#Figure 4:plot the education levels of males in different age groups
+p1<-age_clean%>%ggplot()+
+  geom_bar(aes(x=age,y=no_education),stat = "identity",fill="seagreen3", color="black",)+
+  labs(title="Figure 4:education level by age",
+       subtitle = "no education"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=45))
+p2<-age_clean%>%ggplot()+
+  geom_bar(aes(x=age,y=elementary_school),stat = "identity",fill="seagreen3", color="black",)+
+  labs(subtitle = "elementary school"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=45))
+p3<-age_clean%>%ggplot()+
+  geom_bar(aes(x=age,y=high_school),stat = "identity",fill="seagreen3", color="black",)+
+  labs(subtitle = "high school"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=45))
+p4<-age_clean%>%ggplot()+
+  geom_bar(aes(x=age,y=college_or_higher),stat = "identity",fill="seagreen3", color="black",)+
+  labs(subtitle = "college or higher"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=45))
+grid.arrange(p1, p2,p3,p4, nrow = 2)
+#grid.arrange(...),which places multiple plots in one graph is from
+#https://cran.r-project.org/web/packages/egg/vignettes/Ecosystem.html
+```
+ Figure 4 exhibits the distributions of the education level of males in different age groups. From the top-left (no education) plot, age group of 6 to 9 years old has the highest percentage, which makes sense as some of them are not old enough to attend elementary school. But, besides 6-9 age group, the greater the age is, the higher the none-education rate is. From the top-right plot, age group 10-14 has the highest percentage of having elementary school as their highest degree, because this age group is right round the age for elementary school. But, besides 10-14 age group, the rate of having elementary school as highest degree goes up as the age goes up. From the bottom-left plot, besides age groups under the age of 19, the greater the age is, the less the percentage of having a high school degree is. From the plot for college or higher, for age groups more than 19 years old,the distribution is similar to the high school one. The rate of having a college degree or higher is decreasing as age goes up.
+
+```{r,echo = FALSE}
+#figure 5:plot the median years of education by age 
+age_clean%>%ggplot()+
+  geom_bar(aes(x=age,y=median_years),stat = "identity",fill="seagreen3", color="black",)+
+  labs(title="Figure 5:distribution of median years of education"
+       )
+```
+In figure 5, besides age groups under 19, the less the age is, the longer the education they have received. In other words, younger male generation has a longer education time than the elder generation in Philippines in 1993. 
+
+```{r,echo = FALSE}
+#Figure 6:plot the education levels in different regions 
+p5<-region_clean%>%ggplot()+
+  geom_bar(aes(x=reorder(region,no_education),y=no_education),stat = "identity",fill="seagreen3", color="black",)+
+#use of reorder function is from 
+#https://www.rpubs.com/dvdunne/reorder_ggplot_barchart_axis
+  labs(title="Figure 6:None vs.College degree",
+       subtitle = "no education",
+       x ="regions in ascending order"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=45))
+p6<-region_clean%>%ggplot()+
+  geom_bar(aes(x=reorder(region,no_education),y=college_or_higher),stat = "identity",fill="seagreen3", color="black",)+
+  labs(subtitle = "college or higher",
+       x = "regions matched with the order on the left"
+       )+
+  theme(axis.text.x = element_text(size=7, angle=45))
+grid.arrange(p5,p6,nrow = 1)
+
+
+```
+Figure 6 compares the None-education rate with the rate of having a college degree or higher in the 14 regions. The regions on x-axis of both plot are matched. The plot on the left has a increasing trend, and the plot on the right has a moderately decreasing trend. In general, the region that has a
+higher rate of having college degree or higher would have a lower rate of none-education. 
+
+For different types of residence, 56.9% percent of the rural male residents have a highest degree of elementary school. Only 8.1% of the rural residents have a college degree or higher, whereas the percentage for urban residents is 22%, which is more than two times of the percentage in rural area. 
+
+
+# Discussion
+
+In the process of writing this report, I transferred data in the form of image to text, and then constructed usable datasets from the text. Then I corrected the misidentified information in the datasets and cleaned the datasets for further analysis. Moreover, I described the method of collecting data from the original NDS report[@citeNDS1993]. And some of the weaknesses of the method were discussed in the data section. In addition, I ran a brief analysis of the three datasets, one for the education level in different age groups, one for the education level in different residential types, and the other one for the education level in different regions. After showing a sample of the three datasets, I went through the details of each variables, and the distribution of the number of males in different age groups, residential types, and regions. For the results section, a further step was taken. With the help of plots, I found out the relationship between age groups and their highest education degree, the relationship between none-education rate and the rate of having a college degree or higher, and some differences between urban and rural residents. 
+
+One of the major findings of this report is the relationship between education level and age in Philippines in 1993. For elementary education levels(no education,elementary school), the younger male adults are less likely to have a highest degree of "elementary education levels".For higher education levels(high school, college and higher), the older male adults are less likely to have a highest degree of "higher education levels". In addition, by comparing the median number of years of having education in different age groups, younger adults have a relatively longer time of receiving education. In simple words, the male adults who are younger have received longer education, and are more likely to have a college degree or higher. 
+
+
+Another major findings of this report is the relationship between the rate of no education and the rate of having college degree or higher in different regions. By putting the regions in the same order, the relationship can be observed from the plots, one plot exhibits the no education rate in the regions, and another one exhibits the rate of having college degree or higher in the regions. After the comparative method, I found that the regions with a higher rate of college degree have a lower rate of none-education. In the region of Metro,Manila, the difference between the two rates is extreme, a fairly low non-education rate with a extremely high college degree rate. Moreover, the difference between education level in urban and rural area is extreme as well. The rate of college degree for urban residents is more than two times of the rate for rural residents. And 56.9% of the rural residents have a elementary degree only. 
+
+## Weaknesses and next steps
+As mentioned, the datasets used in the report is transferred from image and the method used to do the transferring is called Optical Character Recognition(OCR). In the process of OCR, a lot of the characters in the image are misidentified, and I had to correct them based on the image, which potentially decreases the accuracy of the datasets. Also, the original data are from 14 regions of Philippines, and one region was not included, because it just formed in 1993. So the data might not be representative of the whole male population in Philippines. In the future, I will try to find better methods to transfer image into text, and I will try to use more recent data for similar studies. For the next steps, this report can be used to do comparative study with other countries. In addition, this report is based on the data from 1993, so there are potentials to do similar reports for other years. 
+
+\newpage
+
+\appendix
+
+# Appendix {-}
+Extract of the questions from @gebru2021datasheets
+
+The datasheets is written using R programming language and a R Markdown file [@citeR].
+
+**Motivation**
+
+1. *For what purpose was the dataset created? Was there a specific task in mind? Was there a specific gap that needed to be filled? Please provide a description.*
+    - The dataset was created to analyze the education level of male in Philippines in 1993. The dataset was generated from a table in a demographic report of Philippines in 1993 [@citeNDS1993]. 
+2. *Who created the dataset (for example, which team, research group) and on behalf of which entity (for example, company, institution, organization)?*
+    -The original table is created by National Statistics Office in Philippines and Macro International Inc. in USA.  
+3. *Who funded the creation of the dataset? If there is an associated grant, please provide the name of the grantor and the grant name and number.*
+    - Macro International Inc. provided the funding for the project that includes the original table [@citeNDS1993].
+    
+
+**Composition**
+
+1. *What do the instances that comprise the dataset represent (for example, documents, photos, people, countries)? Are there multiple types of instances (for example, movies, users, and ratings; people and interactions between them; nodes and edges)? Please provide a description.*
+	- The Dataset is regarding the education level of male Filipinos in 1993, by age groups, region, and residence. 
+2. *How many instances are there in total (of each type, if appropriate)?*
+	- There are mainly two instances, the male Filipinos and Regions in Philippines. 
+3. *Does the dataset contain all possible instances or is it a sample (not necessarily random) of instances from a larger set? If the dataset is a sample, then what is the larger set? Is the sample representative of the larger set (for example, geographic coverage)? If so, please describe how this representativeness was validated/verified. If it is not representative of the larger set, please describe why not (for example, to cover a more diverse range of instances, because instances were withheld or unavailable).*
+	- The dataset contain a sample of the whole population of Philippines. It is a representative of the larger set, in terms of age groups, and geographic coverage. The number of samples for each region and age group is planned according to the demographic distribution. 
+4. *What data does each instance consist of? "Raw" data (for example, unprocessed text or images) or features? In either case, please provide a description.*
+	- The data is just regarding the education level of male Filippinos and the level in different age groups and regions.
+
+5. *Is the dataset self-contained, or does it link to or otherwise rely on external resources (for example, websites, tweets, other datasets)? If it links to or relies on external resources, a) are there guarantees that they will exist, and remain constant, over time; b) are there official archival versions of the complete dataset (that is, including the external resources as they existed at the time the dataset was created); c) are there any restrictions (for example, licenses, fees) associated with any of the external resources that might apply to a dataset consumer? Please provide descriptions of all external resources and any restrictions associated with them, as well as links or other access points, as appropriate.*
+	- The dataset is generated from a table in NDS of Philippines in 1993. The report is published and will exist and remain constant. 
+6. *Does the dataset contain data that might be considered confidential (for example, data that is protected by legal privilege or by doctor-patient confidentiality, data that includes the content of individuals' non-public communications)? If so, please provide a description.*
+	- No
+7. *Does the dataset contain data that, if viewed directly, might be offensive, insulting, threatening, or might otherwise cause anxiety? If so, please describe why.*
+	- No
+8. *Does the dataset identify any sub-populations (for example, by age, gender)? If so, please describe how these subpopulations are identified and provide a description of their respective distributions within the dataset.*
+	- The dataset is regarding the education level of male in Philippines in 1993. 
+9. *Is it possible to identify individuals (that is, one or more natural persons), either directly or indirectly (that is, in combination with other data) from the dataset? If so, please describe how.*
+	- Not possible
+
+**Collection process**
+
+1. *How was the data associated with each instance acquired? Was the data directly observable (for example, raw text, movie ratings), reported by subjects (for example, survey responses), or indirectly inferred/derived from other data (for example, part-of-speech tags, model-based guesses for age or language)? If the data was reported by subjects or indirectly inferred/derived from other data, was the data validated/verified? If so, please describe how.*
+	- The data was collected by doing interviews and survey with selected individuals [@citeNDS1993].
+2. *What mechanisms or procedures were used to collect the data (for example, hardware apparatuses or sensors, manual human curation, software programs, software APIs)? How were these mechanisms or procedures validated?*
+	- The data was collected by surveys and interviews.  
+3. *If the dataset is a sample from a larger set, what was the sampling strategy (for example, deterministic, probabilistic with specific sampling probabilities)?*
+	- Probabilistic and proportion to the size of the regions [@citeNDS1993].
+4. *Who was involved in the data collection process (for example, students, crowdworkers, contractors) and how were they compensated (for example, how much were crowdworkers paid)?*
+	- Field staff were trained in Baguio City, Manila, Cebu City and Davao City, some of them were interviewers and some are field editors [@citeNDS1993].
+5. *Over what timeframe was the data collected? Does this timeframe match the creation timeframe of the data associated with the instances (for example, recent crawl of old news articles)? If not, please describe the timeframe in which the data associated with the instances was created.*
+	- The data was collected in 1993. 
+6. *Did you collect the data from the individuals in question directly, or obtain it via third parties or other sources (for example, websites)?*
+	- The data comes from the NDS of Philippines in 1993 report. 
+
+**Preprocessing/cleaning/labeling**
+
+1. *Was any preprocessing/cleaning/labeling of the data done (for example, discretization or bucketing, tokenization, part-of-speech tagging, SIFT feature extraction, removal of instances, processing of missing values)? If so, please provide a description. If not, you may skip the remaining questions in this section.*
+	- Some of the text are misidentified in the process of OCR, and I had to correct them mannually. 
+2. *Was the "raw" data saved in addition to the preprocessed/cleaned/labeled data (for example, to support unanticipated future uses)? If so, please provide a link or other access point to the "raw" data.*
+	- Yes.
+3. *Is the software that was used to preprocess/clean/label the data available? If so, please provide a link or other access point.*
+	- R programming language was used to preprocess the data [@citeR].
+	
+
+**Uses**
+
+1. *Has the dataset been used for any tasks already? If so, please provide a description.*
+	- The dataset is used in the analysis of male Filipinos education level. 
+2. *Is there a repository that links to any or all papers or systems that use the dataset? If so, please provide a link or other access point.*
+	- National Demographic Survey of Philippines in 1993 [@citeNDS1993]. 
+
+**Distribution**
+
+1. *Will the dataset be distributed to third parties outside of the entity (for example, company, institution, organization) on behalf of which the dataset was created? If so, please provide a description.*
+	- The dataset will be opensource on GitHub.  
+2. *How will the dataset be distributed (for example, tarball on website, API, GitHub)? Does the dataset have a digital object identifier (DOI)?*
+	- GitHub
+
+**Maintenance**
+
+1. *Who will be supporting/hosting/maintaining the dataset?*
+	- Zihao Liu
+2. *How can the owner/curator/manager of the dataset be contacted (for example, email address)?*
+	- zihaohans.liu@mail.utoronto.ca
+
+**The datasheet in the form of a separate pdf can be found in inputs/datasheet**
+
+
+
+\newpage
+
+
+# References
+
+
